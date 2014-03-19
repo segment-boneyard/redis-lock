@@ -27,4 +27,24 @@ describe('lock(name, ttl, fn)', function(){
       });
     });
   })
+
+  it('should work when ttl is a string', function(done){
+    lock('something', '100ms', function(err, locked){
+      if (err) return done(err);
+      assert(false === locked);
+
+      lock('something', '100ms', function(err, locked){
+        if (err) return done(err);
+        assert(true === locked);
+
+        setTimeout(function(){
+          lock('something', '100ms', function(err, locked){
+            if (err) return done(err);
+            assert(false === locked);
+            done();
+          })
+        }, 150);
+      });
+    });
+  })
 })
