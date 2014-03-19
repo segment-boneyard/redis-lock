@@ -6,7 +6,7 @@
 ## Installation
 
 ```
-$ npm install redis-lock
+$ npm install segmentio/redis-lock
 ```
 
 ## Example
