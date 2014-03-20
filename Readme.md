@@ -1,7 +1,7 @@
 
 # redis-lock
 
-  Node redis lock implementation for locking with a TTL.
+  Node redis lock implementation for locking with a TTL. Requires redis 2.6.12 or above.
 
 ## Installation
 
