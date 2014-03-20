@@ -30,12 +30,11 @@ module.exports = function(opts){
     if ('string' == typeof ttl) ttl = ms(ttl);
 
     debug('%j - check (ttl=%s)', name, ttl);
-    db.setnx(key, 1, function(err, set){
+    db.set(key, 1, 'NX', 'PX', ttl, function(err, set){
       if (err) return fn(err);
 
       var locked = !set;
       debug('%j - response (locked=%s)', name, locked);
-      if (!locked) db.pexpire(key, ttl);
       fn(null, !set);
     });
   }
