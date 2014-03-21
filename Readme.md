@@ -1,3 +1,4 @@
+[![Build Status](https://circleci.com/gh/segmentio/redis-lock.png?circle-token=)](https://circleci.com/gh/segmentio/redis-lock)
 
 # redis-lock
 
