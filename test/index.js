@@ -71,3 +71,25 @@ describe('Lock#unlock(fn)', function(){
     });
   })
 })
+
+describe('Lock#retry(fn, interval)', function(){
+  it('should retry until acquired', function(done){
+    var lock = new Lock({
+      redis: redis,
+      name: 'something',
+      timeout: 2000
+    });
+
+    lock.lock(function(err, locked){
+      assert(!err && !locked);
+
+      var start = new Date;
+      lock.retry(function(err){
+        assert(!err);
+        var ms = new Date - start;
+        assert(ms >= 2000);
+        done();
+      }, 500);
+    });
+  })
+})

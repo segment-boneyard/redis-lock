@@ -50,6 +50,28 @@ Lock.prototype.lock = function(fn){
 };
 
 /**
+ * Retry aquiring the lock with the given `interval`
+ * defaulting to 1s.
+ *
+ * @param {Function} fn
+ * @param {Number} [interval]
+ * @api public
+ */
+
+Lock.prototype.retry = function(fn, interval){
+  interval = interval || 1000;
+  var self = this;
+
+  this.lock(function(err, locked){
+    if (err) return fn(err);
+    if (!locked) return fn();
+    setTimeout(function(){
+      self.retry(fn, interval);
+    }, interval);
+  });
+};
+
+/**
  * Unlock and invoke `fn(err)`.
  *
  * @param {Function} fn
