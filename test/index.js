@@ -9,11 +9,11 @@ var lock = new Lock({
   timeout: 100
 });
 
-describe('Lock#lock(fn)', function(){
-  beforeEach(function(done){
-    redis.flushdb(done);
-  })
+beforeEach(function(done){
+  redis.flushdb(done);
+})
 
+describe('Lock#lock(fn)', function(){
   it('should lock for the given ttl', function(done){
     lock.lock(function(err, locked){
       if (err) return done(err);
@@ -50,6 +50,23 @@ describe('Lock#lock(fn)', function(){
             done();
           })
         }, 150);
+      });
+    });
+  })
+})
+
+describe('Lock#unlock(fn)', function(){
+  it('should unlock', function(done){
+    lock.lock(function(err, locked){
+      assert(!err && !locked);
+
+      lock.unlock(function(err){
+        assert(!err);
+
+        lock.lock(function(err, locked){
+          assert(!err && !locked);
+          done();
+        });
       });
     });
   })
