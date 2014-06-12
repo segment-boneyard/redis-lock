@@ -14,16 +14,23 @@ $ npm install segmentio/redis-lock
 
 ```js
 var redis = require('redis').createClient();
-var lock = require('redis-lock')({ redis: redis });
+var Lock = require('redis-lock');
 
-setInterval(function(){
-  var id = Math.random() * 50 | 0;
-  lock(id, '10s', function(err, locked){
-    if (err) throw err;
-    if (locked) return;
-    console.log('%s - process', id);
-  });
-}, 10);
+var lock = new Lock({
+  name: 'locks:something',
+  redis: redis,
+  timeout: '10s;' // or number
+});
+
+// try acquiring lock
+lock.lock(function(err, locked){
+
+});
+
+// try acquiring lock with retry interval
+lock.retry(function(err){
+
+}, 500);
 ```
 
 # License
