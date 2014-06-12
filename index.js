@@ -7,7 +7,18 @@ var debug = require('debug')('redis-lock');
 var assert = require('assert');
 var ms = require('ms');
 
+/**
+ * Expose `Lock`.
+ */
+
 module.exports = Lock;
+
+/**
+ * Initialize a lock with the given `opts`.
+ *
+ * @param {Object} opts
+ * @api public
+ */
 
 function Lock(opts) {
   assert(opts, 'settings required');
