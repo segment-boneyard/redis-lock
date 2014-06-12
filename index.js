@@ -12,6 +12,7 @@ var ms = require('ms');
  * return the lock function.
  *
  * - `redis` client
+ * - `retry` interval
  *
  * @param {Object} opts
  * @return {Function}
@@ -25,7 +26,7 @@ module.exports = function(opts){
 
   var db = opts.redis;
 
-  return function(name, ttl, fn){
+  return function check(name, ttl, fn){
     var key = opts.name + ':' + name;
     if ('string' == typeof ttl) ttl = ms(ttl);
 
@@ -35,6 +36,15 @@ module.exports = function(opts){
 
       var locked = !set;
       debug('%j - response (locked=%s)', name, locked);
+
+      if (locked && opts.retry) {
+        debug('%j - retry in %sms', name, opts.retry);
+        setTimeout(function(){
+          check(name, ttl, fn);
+        }, opts.retry);
+        return;
+      }
+
       fn(null, !set);
     });
   }
