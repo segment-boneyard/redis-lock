@@ -1,24 +1,30 @@
 
 var redis = require('redis').createClient();
 var assert = require('assert');
-var lock = require('..')({ redis: redis });
+var Lock = require('..');
 
-describe('lock(name, ttl, fn)', function(){
+var lock = new Lock({
+  redis: redis,
+  name: 'something',
+  timeout: 100
+});
+
+describe('Lock#lock(fn)', function(){
   beforeEach(function(done){
     redis.flushdb(done);
   })
 
   it('should lock for the given ttl', function(done){
-    lock('something', 100, function(err, locked){
+    lock.lock(function(err, locked){
       if (err) return done(err);
       assert(false === locked);
 
-      lock('something', 100, function(err, locked){
+      lock.lock(function(err, locked){
         if (err) return done(err);
         assert(true === locked);
 
         setTimeout(function(){
-          lock('something', 100, function(err, locked){
+          lock.lock(function(err, locked){
             if (err) return done(err);
             assert(false === locked);
             done();
@@ -29,16 +35,16 @@ describe('lock(name, ttl, fn)', function(){
   })
 
   it('should work when ttl is a string', function(done){
-    lock('something', '100ms', function(err, locked){
+    lock.lock(function(err, locked){
       if (err) return done(err);
       assert(false === locked);
 
-      lock('something', '100ms', function(err, locked){
+      lock.lock(function(err, locked){
         if (err) return done(err);
         assert(true === locked);
 
         setTimeout(function(){
-          lock('something', '100ms', function(err, locked){
+          lock.lock(function(err, locked){
             if (err) return done(err);
             assert(false === locked);
             done();

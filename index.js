@@ -7,35 +7,46 @@ var debug = require('debug')('redis-lock');
 var assert = require('assert');
 var ms = require('ms');
 
+module.exports = Lock;
+
+function Lock(opts) {
+  assert(opts, 'settings required');
+  assert(opts.name, '.name required');
+  assert(opts.redis, '.redis required');
+  this.db = opts.redis;
+  this.name = opts.name;
+  this.timeout = opts.timeout || '30s';
+  if ('string' == typeof this.timeout) this.timeout = ms(this.timeout);
+}
+
 /**
- * Configure a lock with `opts` and
- * return the lock function.
+ * Lock and reply with `fn(err, locked)` immediately.
  *
- * - `redis` client
- *
- * @param {Object} opts
- * @return {Function}
+ * @param {Function} fn
  * @api public
  */
 
-module.exports = function(opts){
-  opts = opts || {};
-  opts.name = opts.name || 'lock';
-  assert(opts.redis, '.redis instance required');
+Lock.prototype.lock = function(fn){
+  var ttl = this.timeout;
+  var key = this.name;
 
-  var db = opts.redis;
+  debug('%j - check (ttl=%s)', key, ttl);
+  this.db.set(key, 1, 'NX', 'PX', ttl, function(err, set){
+    if (err) return fn(err);
+    debug('%j - response (locked=%s)', key, !set);
+    fn(null, !set);
+  });
+};
 
-  return function(name, ttl, fn){
-    var key = opts.name + ':' + name;
-    if ('string' == typeof ttl) ttl = ms(ttl);
+/**
+ * Unlock and invoke `fn(err)`.
+ *
+ * @param {Function} fn
+ * @api public
+ */
 
-    debug('%j - check (ttl=%s)', name, ttl);
-    db.set(key, 1, 'NX', 'PX', ttl, function(err, set){
-      if (err) return fn(err);
-
-      var locked = !set;
-      debug('%j - response (locked=%s)', name, locked);
-      fn(null, !set);
-    });
-  }
-}
+Lock.prototype.unlock = function(fn){
+  var key = this.name;
+  debug('%j - unlock', key);
+  this.db.del(key, fn);
+};
